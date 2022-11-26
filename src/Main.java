@@ -139,7 +139,8 @@ public class Main {
         for (Process process : processes) {
 
             if (Process.clock >= process.getArrivalTime()) {
-                System.out.println("Process " + process.getPid() + " has entered into the ready queue at " + Process.clock + "ms");
+                System.out.println("Process " + process.getPid() +
+                        " has entered into the ready queue at " + Process.clock + "ms");
                 readyqueue.add(process);
                 process.setInQueue(true); // Set their status to in ready queue
             }
@@ -257,9 +258,10 @@ public class Main {
                 }
             }
             // If all processes are done and nothing in ready queue break loop
-            if (done)
-
+            if (done) {
                 break;
+            }
+
         }
         System.out.println("\nThere has been " + context_switch + " total context switches");
     }
@@ -301,10 +303,10 @@ public class Main {
                     processes.get(i).getWaitingTime() + "\t\t\t" + processes.get(i).getTurnaroundTime());
         }
         // Calculate the CPU Utilization
-        System.out.println("The CPU Utilization = " + (1-(Process.idleTime/Process.clock)) * 100 + "%");
+        System.out.println("The CPU Utilization = " + (1 - ((float) Process.idleTime / (float) Process.clock)) * 100 + "%");
 
         // Calculate the Throughput
-        System.out.println("The Throughput = " + ((float)processes.size() / (float)Process.clock)
+        System.out.println("The Throughput = " + ((float) processes.size() / (float) Process.clock)
                 + " processes per unit of time");
 
         // Calculate the Average Waiting Time
@@ -317,10 +319,10 @@ public class Main {
 
     // Static object for the timestamp
     static Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+    static Scanner inp = new Scanner(System.in); // Creation of Scanner Object
 
     //Driver Method
     public static void main(String[] args) {
-        Scanner inp = new Scanner(System.in); // Creation of Scanner Object
 
         String filename;
         ArrayList<Process> processes = new ArrayList<>(); // List data structure to hold all the processes
@@ -361,33 +363,59 @@ public class Main {
                 e.printStackTrace();
             }
         } while (true); // Do it until the user enters the correct file with correct information
-
-        int quantum = 0; // initialize the variable for quantum
-        do {
-            try {
-                System.out.print("\nEnter the time quantum : ");
-                quantum = inp.nextInt();
+        while (true) {
+            int quantum = 0; // initialize the variable for quantum
+            do {
+                try {
+                    System.out.print("Enter the time quantum : ");
+                    quantum = inp.nextInt();
+                    inp.nextLine();
                 /* Check to see if the quantum value is more than 0.
                 If it is less than 1 than throw an exception and tell the user to enter a number more than 0
                 Repeat this until the user enters a valid number
                 * */
-                if (quantum < 1) {
-                    throw new InputMismatchException();
+                    if (quantum < 1) {
+                        throw new InputMismatchException();
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Please enter a number more than 0");
                 }
-            } catch (InputMismatchException e) {
-                System.out.println("Please enter a number more than 0");
-            }
-        } while (quantum < 1);
+            } while (quantum < 1);
 
-        /* This is important to the algorithm. Sorting the list of processes by Arrival time.
-        Also if the Arrival Times are the same of processes we will sort by Process IDs.
+        /*  This is important to the algorithm. Sorting the list of processes by Arrival time.
+            Also, if the Arrival Times are the same of processes we will sort by Process IDs.
         * */
-        processes.sort(new ProcessArrivalComparator());
+            processes.sort(new ProcessArrivalComparator());
+            for (Process process : processes) {
+                process.setResponseTime(-1);
+                process.setInQueue(false);
+                process.setComplete(false);
+                process.setCompletionTime(0);
+                process.setBurstTimeRemaining(process.getBurstTime());
+                process.setTurnaroundTime(0);
+                process.setWaitingTime(0);
+            }
+            System.out.println("*****************************************************************************");
+            System.out.println("\n");
 
-        System.out.println("*****************************************************************************");
-        System.out.println("\n");
-        // Call the Round Robin Function
-        roundRobin(processes, processes.size(), quantum);
+            // Call the Round Robin Function
+            roundRobin(processes, processes.size(), quantum);
+            String answer = "";
+            do {
+                System.out.println("Type to Quit (Q) or to Simulate again (S) ");
+                answer = inp.nextLine().toUpperCase();
+
+            } while (!answer.equals("S") && !answer.equals("Q"));
+
+            if (answer.equals("Q")) {
+                System.out.println("Thank you for using my Round Robin simulator :)");
+                break;
+            } else {
+                System.out.println();
+            }
+
+        }
+
 
     }
 }
